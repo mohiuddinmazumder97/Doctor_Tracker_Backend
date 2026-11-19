@@ -25,7 +25,8 @@ export async function createDoctor(input: CreateDoctorInput) {
 export async function updateDoctor(id: string, input: UpdateDoctorInput) {
   const doctor = await doctorRepo.updateDoctor(id, input);
   if (!doctor) throw ApiError.notFound('Doctor');
-  return doctor;
+  // Same shape as GET/POST: include patientCount (index-backed count on patients.doctor).
+  return { ...doctor, patientCount: await patientRepo.countPatientsForDoctor(id) };
 }
 
 /**

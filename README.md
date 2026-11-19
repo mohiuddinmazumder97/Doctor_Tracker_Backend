@@ -33,6 +33,7 @@
 - **Doctors & patients:** full CRUD, search, filters, sorting, server-side pagination, doctor ↔ patient relationship with a strict no-orphans deletion policy.
 - **Analytics:** overview KPIs, zero-filled registration trends in the caller's time zone, patients-per-doctor, condition and specialization distributions — all MongoDB aggregation pipelines.
 - **Hardening:** Zod validation of every body, query and param (unknown fields rejected); regex-escaped search; `helmet`; CORS allow-list; 100 kB JSON limit; global API rate limit; centralized error handler that never leaks internals; fail-fast environment validation.
+- **API docs:** Swagger UI at `/api/docs` from an OpenAPI 3.1 spec generated from the Zod validators and contract-tested against real responses.
 - **Developer experience:** `npm run dev:memory` runs the whole API on a seeded in-memory MongoDB with zero configuration.
 
 ## Technology stack
@@ -99,6 +100,10 @@ Verified on Atlas with `explain("executionStats")`: every list query is an `IXSC
 
 **Base path:** `/api` · **Auth:** session cookie `dt_access_token` (set by login). All endpoints except `/auth/login`, `/auth/logout` and `/health` require it.
 
+**Interactive docs (Swagger UI):** [`/api/docs`](http://localhost:5000/api/docs) · raw OpenAPI 3.1 JSON: [`/api/docs.json`](http://localhost:5000/api/docs.json). Run `POST /api/auth/login` from the page first; the browser then sends the session cookie with every “Try it out” request.
+
+The spec lives in `src/docs/openapi.ts`. Request bodies and query parameters are **generated from the same Zod schemas the controllers validate with** (`z.toJSONSchema`), so the documented rules can't drift from the real ones. Response schemas are strict (`additionalProperties: false`), and `tests/openapi.test.ts` checks real success and error responses from every endpoint against them.
+
 ### Response envelope
 
 ```jsonc
@@ -137,7 +142,7 @@ The token is **never** returned in the body.
 | `GET` | `/doctors` | see query parameters below; each item includes `patientCount` |
 | `POST` | `/doctors` | body: `name`, `specialization`, `hospital`, `phone`, `email` → `201` · 409 duplicate email |
 | `GET` | `/doctors/:id` | includes `patientCount` · 404 |
-| `PATCH` | `/doctors/:id` | any subset of the create fields (at least one) |
+| `PATCH` | `/doctors/:id` | any subset of the create fields (at least one); returns the doctor with `patientCount` |
 | `DELETE` | `/doctors/:id` | `204` · **409 `{ patientCount }` while patients are assigned** |
 | `GET` | `/doctors/:id/patients` | the doctor's patients; same parameters as `/patients` except `doctorId` |
 
@@ -264,11 +269,12 @@ The server validates its environment at startup and refuses to start with a read
 npm test
 ```
 
-33 integration tests run the real Express app against an in-memory MongoDB (indexes synced, collections cleared between tests):
+40 integration tests run the real Express app against an in-memory MongoDB (indexes synced, collections cleared between tests):
 
 - **auth** — cookie flags, token never in body, identical 401s, validation, rate limit (429), `/me` with missing/tampered/orphaned tokens (cookie cleared), logout, protected routes
 - **doctors** — CRUD, case-insensitive duplicate email (409), unknown fields rejected, 400 vs 404 ids, deletion policy, pagination metadata and stable ordering, multi-field search incl. regex injection, filters, `patientCount` sort, a doctor's patients
 - **patients** — doctor existence checks, field validation, duplicates, reassignment unblocking doctor deletion, projection, filters, pagination
+- **openapi** — the spec and Swagger UI are served without auth; real success and error responses from every endpoint validate against the documented schemas (Ajv, draft 2020-12)
 - **dashboard** — empty database, every aggregation against known data, live updates, date ranges, parameter validation, **time-zone bucketing** (a 02:00 Dhaka registration counts in Dhaka's month), **DST-correct month starts**, Monday-aligned zero-filled weeks
 
 Browser end-to-end suites covering the full UI live in the frontend repo (`npm run test:e2e`).

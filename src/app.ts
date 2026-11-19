@@ -3,7 +3,9 @@ import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { pinoHttp } from 'pino-http';
+import swaggerUi from 'swagger-ui-express';
 import { env } from './config/env.js';
+import { buildOpenApiDocument } from './docs/openapi.js';
 import { errorHandler, notFoundHandler } from './middlewares/errorHandler.js';
 import { apiRateLimiter } from './middlewares/rateLimit.js';
 import { apiRouter } from './routes/index.js';
@@ -31,6 +33,19 @@ export function createApp() {
   app.use(express.json({ limit: '100kb' }));
   app.use(cookieParser());
   app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url === '/api/health' } }));
+
+  // Interactive API docs (public; the spec contains no secrets). Mounted before the
+  // authenticated router so the docs themselves don't require a session.
+  const openApiDocument = buildOpenApiDocument();
+  app.get('/api/docs.json', (_req, res) => res.json(openApiDocument));
+  app.use(
+    '/api/docs',
+    swaggerUi.serve,
+    swaggerUi.setup(openApiDocument, {
+      customSiteTitle: 'Doctor Tracker API docs',
+      swaggerOptions: { withCredentials: true, displayRequestDuration: true, tryItOutEnabled: true },
+    }),
+  );
 
   app.use('/api', apiRateLimiter, apiRouter);
 

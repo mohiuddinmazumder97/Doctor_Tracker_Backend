@@ -7,7 +7,8 @@ const timeZoneSchema = z
   .trim()
   .max(64)
   .default('UTC')
-  .refine(isValidTimeZone, 'Invalid IANA time zone');
+  .refine(isValidTimeZone, 'Invalid IANA time zone')
+  .meta({ description: 'IANA time zone used for month/day boundaries', example: 'Asia/Dhaka' });
 
 const baseFields = { ...dateRangeFields, tz: timeZoneSchema };
 

@@ -3,7 +3,9 @@ import { z } from 'zod';
 
 export const objectIdSchema = z
   .string({ error: 'Id is required' })
-  .refine((value) => isValidObjectId(value) && /^[a-f\d]{24}$/i.test(value), 'Invalid id');
+  .refine((value) => isValidObjectId(value) && /^[a-f\d]{24}$/i.test(value), 'Invalid id')
+  // .meta() only annotates the generated OpenAPI schema; it does not affect validation.
+  .meta({ pattern: '^[a-fA-F0-9]{24}$', example: '665f1c2e8b3a4d0012ab34cd' });
 
 export const idParamsSchema = z.object({ id: objectIdSchema });
 
@@ -34,6 +36,12 @@ const dateParam = (endOfDay: boolean) =>
         return z.NEVER;
       }
       return date;
+    })
+    .meta({
+      description: endOfDay
+        ? 'Upper bound on createdAt — YYYY-MM-DD (inclusive, whole day) or ISO timestamp'
+        : 'Lower bound on createdAt — YYYY-MM-DD or ISO timestamp',
+      example: endOfDay ? '2026-11-30' : '2026-01-01',
     });
 
 /** Spread into query schemas that support createdAt range filtering. */

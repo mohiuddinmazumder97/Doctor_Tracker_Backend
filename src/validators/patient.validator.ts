@@ -23,7 +23,8 @@ const addressSchema = z
 const dateOfBirthSchema = z.coerce
   .date({ error: 'Enter a valid date of birth' })
   .refine((date) => date <= new Date(), 'Date of birth cannot be in the future')
-  .refine((date) => date.getUTCFullYear() >= 1900, 'Date of birth must be after 1900');
+  .refine((date) => date.getUTCFullYear() >= 1900, 'Date of birth must be after 1900')
+  .meta({ type: 'string', format: 'date', example: '1988-04-12', description: 'Not in the future; year ≥ 1900' });
 
 const patientFields = z.object({
   fullName: z

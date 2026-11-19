@@ -14,12 +14,14 @@ export const emailSchema = z
   .string({ error: 'Email is required' })
   .trim()
   .toLowerCase()
-  .pipe(z.email('Enter a valid email address').max(254));
+  .pipe(z.email('Enter a valid email address').max(254))
+  .meta({ format: 'email', maxLength: 254 });
 
 export const phoneSchema = z
   .string({ error: 'Phone is required' })
   .trim()
-  .regex(PHONE_REGEX, 'Enter a valid phone number');
+  .regex(PHONE_REGEX, 'Enter a valid phone number')
+  .meta({ example: '+1 (555) 010-2030' });
 
 const doctorFields = z.object({
   name: z.string({ error: 'Name is required' }).trim().min(2, 'Name must be at least 2 characters').max(100),
