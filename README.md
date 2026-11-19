@@ -2,7 +2,7 @@
 
 **REST API for Doctor Tracker, a healthcare administration dashboard.** Express 5 + TypeScript + MongoDB, with cookie-based JWT authentication, validated inputs, indexed queries and aggregation-pipeline analytics.
 
-> **Live API:** _added after deployment_ · **Demo login:** `admin@doctortracker.dev` / `Admin@12345`
+> **Live API:** _added after deployment_ · **Demo login:** `admin@doctortracker.dev` / `lskfjlsfdwre`
 >
 > The Next.js frontend, screenshots and the full project write-up live in
 > [Doctor_Tracker_Frontend](https://github.com/mohiuddinmazumder97/Doctor_Tracker_Frontend).
