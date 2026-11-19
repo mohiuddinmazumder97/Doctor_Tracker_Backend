@@ -23,17 +23,17 @@ const patientSchema = new Schema(
     doctor: { type: Schema.Types.ObjectId, ref: 'Doctor', required: true },
     address: { type: addressSchema, required: true },
   },
-  { timestamps: true },
+  { timestamps: true, versionKey: false },
 );
 
 patientSchema.index({ email: 1 }, { unique: true });
 // A doctor's patient list (newest first) and patients-per-doctor aggregation.
-patientSchema.index({ doctor: 1, createdAt: -1 });
+patientSchema.index({ doctor: 1, createdAt: -1, _id: -1 });
 // Condition filter + condition distribution chart.
-patientSchema.index({ condition: 1, createdAt: -1 });
+patientSchema.index({ condition: 1, createdAt: -1, _id: -1 });
 // Default listing order, date-range filters and registration trends.
-patientSchema.index({ createdAt: -1 });
-patientSchema.index({ fullName: 1 });
+patientSchema.index({ createdAt: -1, _id: -1 });
+patientSchema.index({ fullName: 1, _id: 1 });
 
 export type Patient = InferSchemaType<typeof patientSchema>;
 export const PatientModel = model('Patient', patientSchema);

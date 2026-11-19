@@ -8,7 +8,7 @@ const adminSchema = new Schema(
     passwordHash: { type: String, required: true, select: false },
     role: { type: String, enum: ['admin'], default: 'admin', required: true },
   },
-  { timestamps: true },
+  { timestamps: true, versionKey: false },
 );
 
 export type Admin = InferSchemaType<typeof adminSchema>;

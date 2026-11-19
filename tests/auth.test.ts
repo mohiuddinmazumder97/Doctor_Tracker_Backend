@@ -19,7 +19,7 @@ describe('POST /api/auth/login', () => {
 
     expect(res.body).toEqual({
       success: true,
-      data: { admin: { id: expect.any(String), name: ADMIN.name, email: ADMIN.email, role: 'admin' } },
+      data: { admin: { _id: expect.any(String), name: ADMIN.name, email: ADMIN.email, role: 'admin' } },
     });
     expect(JSON.stringify(res.body)).not.toContain('passwordHash');
     const cookie = authCookie(res);

@@ -11,14 +11,14 @@ export const BCRYPT_ROUNDS = 12;
 const DUMMY_HASH = bcrypt.hashSync('timing-attack-mitigation', BCRYPT_ROUNDS);
 
 export interface PublicAdmin {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   role: 'admin';
 }
 
 function toPublicAdmin(admin: { _id: unknown; name: string; email: string }): PublicAdmin {
-  return { id: String(admin._id), name: admin.name, email: admin.email, role: 'admin' };
+  return { _id: String(admin._id), name: admin.name, email: admin.email, role: 'admin' };
 }
 
 export async function login({ email, password }: LoginInput) {
