@@ -67,11 +67,14 @@ describe('GET /api/auth/me', () => {
 
   it('rejects missing, tampered and orphaned tokens', async () => {
     await request(app).get('/api/auth/me').expect(401);
-    await request(app).get('/api/auth/me').set('Cookie', `${AUTH_COOKIE}=not.a.jwt`).expect(401);
+    const tampered = await request(app).get('/api/auth/me').set('Cookie', `${AUTH_COOKIE}=not.a.jwt`).expect(401);
+    // The rejected cookie is cleared so the frontend route guard doesn't loop.
+    expect(authCookie(tampered)).toMatch(/Expires=Thu, 01 Jan 1970/);
 
     // Valid signature, but the admin no longer exists.
     const orphan = signAccessToken({ adminId: '507f1f77bcf86cd799439011', role: 'admin' });
-    await request(app).get('/api/auth/me').set('Cookie', `${AUTH_COOKIE}=${orphan}`).expect(401);
+    const orphaned = await request(app).get('/api/auth/me').set('Cookie', `${AUTH_COOKIE}=${orphan}`).expect(401);
+    expect(authCookie(orphaned)).toMatch(/Expires=Thu, 01 Jan 1970/);
   });
 });
 

@@ -21,6 +21,12 @@ export function logout(_req: Request, res: Response) {
 
 export async function me(req: Request, res: Response) {
   if (!req.auth) throw ApiError.unauthorized();
-  const admin = await authService.getCurrentAdmin(req.auth.adminId);
-  sendSuccess(res, { admin });
+  try {
+    const admin = await authService.getCurrentAdmin(req.auth.adminId);
+    sendSuccess(res, { admin });
+  } catch (error) {
+    // Valid signature but the admin no longer exists: end the session.
+    if (error instanceof ApiError && error.statusCode === 401) clearAuthCookie(res);
+    throw error;
+  }
 }
